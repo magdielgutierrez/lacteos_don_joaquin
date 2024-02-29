@@ -175,52 +175,52 @@ def flows_read_inventory():
     dfAllData = pd.DataFrame()
     smb_block = SMB.load("don-joaquin-inventario")
     results, sheets=get_file_inventory(smb_block)
-    print(sheets)
-    # for key, rawData in results.items():
-        
-    #     print(f"Nombre de la Hoja que se esta extrayendo la data {key}")
-               
-    #     rawData= _formatSheets(rawData,key)
-                         
-    #     groupColumns=rawData.columns.values.tolist()
-    #     dfData = pd.melt(rawData, id_vars=['Proveedor','PrecioUnit','Subsidio'], value_vars=groupColumns[3:], var_name='Fecha', value_name='Cantidad')
-    #     dfData=dfData[['Fecha','Proveedor','PrecioUnit','Subsidio','Cantidad']]
-    #     dfData=dfData[dfData['Cantidad'] != 0]
-    #     dfData['Fecha_temp'] = pd.to_datetime(dfData['Fecha'], format='%d/%m/%Y')
-    #     dfData['pdn_amount_paid']= dfData['PrecioUnit'] * dfData['Cantidad']
-    #     dfData['pdn_amount_sub']= dfData['Subsidio'] * dfData['Cantidad']
-    #     dfData['pdn_total_amount']=dfData['pdn_amount_paid']+dfData['pdn_amount_sub']
-    #     dfData['pdn_type']= dfData.apply(lambda row:_clasificarProveedor(row[1],row[2]), axis=1)
-        
-    #     dfData['pdn_num_week'] = dfData['Fecha_temp'].dt.isocalendar().week
-    #     dfData['pdn_year'] = dfData['Fecha_temp'].dt.isocalendar().year
-    #     dfData['pdn_month'] = dfData['Fecha_temp'].dt.month
-    #     dfData['pdn_name_month'] = dfData['Fecha_temp'].dt.strftime('%b')
-        
-    #     dfAllData = pd.concat([dfAllData, dfData], ignore_index=True)
-    #     #break
     
-    # dfAllData=dfAllData.drop_duplicates()
-    # dfAllData=dfAllData.rename(columns={"Fecha_temp": "pdn_date",
-    #                                     "PrecioUnit": "pdn_unit_price",
-    #                                     "Proveedor":"pdn_provider",
-    #                                     "Cantidad":"pdn_quantity",
-    #                                     "Subsidio":"pdn_subsidy"})
+    for key, rawData in results.items():
+        
+        print(f"Nombre de la Hoja que se esta extrayendo la data {key}")
+               
+        rawData= _formatSheets(rawData,key)
+                         
+        groupColumns=rawData.columns.values.tolist()
+        dfData = pd.melt(rawData, id_vars=['Proveedor','PrecioUnit','Subsidio'], value_vars=groupColumns[3:], var_name='Fecha', value_name='Cantidad')
+        dfData=dfData[['Fecha','Proveedor','PrecioUnit','Subsidio','Cantidad']]
+        dfData=dfData[dfData['Cantidad'] != 0]
+        dfData['Fecha_temp'] = pd.to_datetime(dfData['Fecha'], format='%d/%m/%Y')
+        dfData['pdn_amount_paid']= dfData['PrecioUnit'] * dfData['Cantidad']
+        dfData['pdn_amount_sub']= dfData['Subsidio'] * dfData['Cantidad']
+        dfData['pdn_total_amount']=dfData['pdn_amount_paid']+dfData['pdn_amount_sub']
+        dfData['pdn_type']= dfData.apply(lambda row:_clasificarProveedor(row[1],row[2]), axis=1)
+        
+        dfData['pdn_num_week'] = dfData['Fecha_temp'].dt.isocalendar().week
+        dfData['pdn_year'] = dfData['Fecha_temp'].dt.isocalendar().year
+        dfData['pdn_month'] = dfData['Fecha_temp'].dt.month
+        dfData['pdn_name_month'] = dfData['Fecha_temp'].dt.strftime('%b')
+        
+        dfAllData = pd.concat([dfAllData, dfData], ignore_index=True)
+        #break
+    
+    dfAllData=dfAllData.drop_duplicates()
+    dfAllData=dfAllData.rename(columns={"Fecha_temp": "pdn_date",
+                                        "PrecioUnit": "pdn_unit_price",
+                                        "Proveedor":"pdn_provider",
+                                        "Cantidad":"pdn_quantity",
+                                        "Subsidio":"pdn_subsidy"})
 
-    # dfAllData['pdn_date']=dfAllData['pdn_date'].astype(str)
-    # dfAllData=dfAllData.drop(['Fecha'], axis=1)
+    dfAllData['pdn_date']=dfAllData['pdn_date'].astype(str)
+    dfAllData=dfAllData.drop(['Fecha'], axis=1)
     # print(dfAllData.sample(1).T)
     # print(dfAllData.to_dict("records")[0])
-    #post_data_in_database(dfAllData)
+    post_data_in_database(dfAllData)
     
 
 if __name__ == "__main__":
-    flows_read_inventory()
-    # flows_read_inventory.from_source(
-    #     source='https://github.com/magdielgutierrez/productos_don_joaquin.git',
-    #     entrypoint="don_joaquin_inventory.py:flows_read_inventory",
-    # ).deploy(
-    #     name="don_joaquin_produccion",
-    #     work_pool_name="don-joaquin-lacteos",
-    #     cron="0 13 * * *",
-    # )
+    #flows_read_inventory()
+    flows_read_inventory.from_source(
+        source='https://github.com/magdielgutierrez/lacteos_don_joaquin.git',
+        entrypoint="don_joaquin_inventory.py:flows_read_inventory",
+    ).deploy(
+        name="don_joaquin_produccion",
+        work_pool_name="don-joaquin-lacteos",
+        cron="0 20 * * *",
+    )
